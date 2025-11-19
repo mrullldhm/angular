@@ -18,7 +18,7 @@
 
 #### Create a component (src/app)
 - `ng g c "component name"`
-- `ng g c "new folder/component name"`
+- `ng g c "folder name/component name"`
 
 #### Import component
 ```
@@ -196,8 +196,9 @@ src/app/compoenents/counter/counter.ts
 
 <!-- -------------------------------------------------------------- -->
 
-# Routing
+# Routing - RouterOutlet
 
+#### router-outlet
 ```
 src/app/app.html
     <app-header />
@@ -205,6 +206,22 @@ src/app/app.html
     <main>
     <router-outlet />
     </main>
+---------------------------------------------------------------
+src/app/app.ts
+    import { Component, signal } from '@angular/core';
+    import { RouterOutlet } from '@angular/router';
+    import { Header } from './components/header/header';
+
+    @Component({
+    selector: 'app-root',
+    standalone: true,
+    imports: [RouterOutlet, Header],
+    templateUrl: './app.html',
+    styleUrl: './app.scss'
+    })
+    export class App {
+    protected readonly title = signal('first-ng-app');
+    }
 ---------------------------------------------------------------
 src/app/app.routes.ts
     import { Routes } from '@angular/router';
@@ -224,8 +241,10 @@ src/app/app.routes.ts
         },
     },
     ];
----------------------------------------------------------------
----------------------------------------------------------------
+```
+
+#### routerLink
+```
 src/app/components/header/header.html
     <header>
     <nav>
@@ -251,4 +270,103 @@ src/app/components/header/header.ts
 }
 ```
 
+<!-- -------------------------------------------------------------- -->
+
+# Angular Services
+
+#### Purpose
+``` 
+    An Angular service is a file where you put shared code.
+
+    It is used when:
+
+    You want to reuse the same code in many components
+
+    You want to get data from an API
+
+    You want to save or share data
+
+    You want to keep components clean
+```
+
+#### Create Angular service
+- `ng g service "folder name/service name"`
+
+
+
+```
+src\app\todos\todos.html
+    <h2>Todos!</h2>
+
+    <h4>Example 1</h4>
+    <p>
+    {{todoItems()[0].title}}
+    </p>
+    <p>
+    {{todoItems()[1].title}}
+    </p>
+
+    <h4>Example 2</h4>
+    @for (todoItem of todoItems(); track todoItem.id) {
+        <p>{{todoItem.title}}</p>
+    }
+---------------------------------------------------------------
+src\app\todos\todos.ts
+    import { Component, inject, OnInit, signal } from '@angular/core';
+    import { TodosService } from '../services/todos.service';
+    import { Todo } from '../model/todo.type';
+
+    @Component({
+    selector: 'app-todos',
+    standalone: true,
+    imports: [],
+    templateUrl: './todos.html',
+    styleUrl: './todos.scss',
+    })
+    export class Todos implements OnInit {
+    todoService = inject(TodosService);
+    todoItems = signal<Array<Todo>>([]);
+
+    ngOnInit(): void {
+        console.log(this.todoService.todoItems);
+        this.todoItems.set(this.todoService.todoItems)
+    }
+    }
+---------------------------------------------------------------
+src\app\services\todos.service.ts
+    import { Injectable } from '@angular/core';
+    import { Todo } from '../model/todo.type';
+
+    @Injectable({
+    providedIn: 'root',
+    })
+    export class TodosService {
+    todoItems: Array<Todo> = [
+        {
+        title: 'Finish TypeScript lesson',
+        id: 0,
+        userId: 1,
+        completed: false,
+        },
+        {
+        title: 'Finish Angular lesson',
+        id: 1,
+        userId: 1,
+        completed: true,
+        },
+    ];
+    }
+---------------------------------------------------------------
+src\app\model\todo.type.ts
+    export type Todo = {
+    userId: number;
+    completed: boolean;
+    title: string;
+    id: number;
+    };
+---------------------------------------------------------------
+
+```
+
+<!-- -------------------------------------------------------------- -->
 

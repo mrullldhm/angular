@@ -1,1 +1,15 @@
-<p>todos works!</p>
+<h2>Todos!</h2>
+
+<h4>Example 1</h4>
+<p>
+  {{todoItems()[0].title}}
+</p>
+<p>
+  {{todoItems()[1].title}}
+</p>
+
+<h4>Example 2</h4>
+
+@for (todoItem of todoItems(); track todoItem.id) {
+    <p>{{todoItem.title}}</p>
+}
