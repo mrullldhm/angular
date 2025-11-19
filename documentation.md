@@ -114,3 +114,38 @@ src/app/home/home.html
     <p>home works!</p>
     <app-greeting [greetingMessage]="homeMessage()"/> 
 ```
+
+<!-- -------------------------------------------------------------- -->
+
+# Event Listener
+
+### 
+```
+src/app/home/home.html
+    <p>home works!</p>
+
+    <app-greeting [greetingMessage]="homeMessage()" />
+
+    <input type="text" (keyup)="keyUpHandler($event)" />
+---------------------------------------------------------------
+src/app/home/home.ts
+    import { Component, signal } from '@angular/core';
+    import { Counter } from '../components/counter/counter';
+    import { Greeting } from '../components/greeting/greeting';
+
+    @Component({
+    selector: 'app-home',
+    standalone: true,
+    imports: [Counter, Greeting],
+    templateUrl: './home.html',
+    styleUrl: './home.scss',
+    })
+
+    export class Home {
+    homeMessage = signal('Hello World');
+
+    keyUpHandler(event: KeyboardEvent) {
+        console.log(`User typing ${event.key} in the input box`);
+    }
+    }
+```
