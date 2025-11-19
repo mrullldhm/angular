@@ -81,6 +81,11 @@ src/app/components/header/header.html
 
 ### Input() - Parent to Child
 ```
+src/app/home/home.html
+    <p>home works!</p>
+    
+    <app-greeting [greetingMessage]="homeMessage()"/> 
+---------------------------------------------------------------
 src/app/home/home.ts
     import { Component, signal } from '@angular/core';
     import { Counter } from '../components/counter/counter';
@@ -109,10 +114,6 @@ src/app/components/greeting/greeting.ts
     export class Greeting {
     greetingMessage = input('');
     }
----------------------------------------------------------------
-src/app/home/home.html
-    <p>home works!</p>
-    <app-greeting [greetingMessage]="homeMessage()"/> 
 ```
 
 <!-- -------------------------------------------------------------- -->
@@ -149,3 +150,46 @@ src/app/home/home.ts
     }
     }
 ```
+
+# Reactive State Management
+
+###
+```
+src/app/compoenents/counter/counter.html
+    <h2>Counter!</h2>
+
+    <p>Counter value: {{ counterValue() }}</p>
+
+    <div>
+    <button (click)="increment()">Increment</button>
+    <button (click)="reset()">Reset</button>
+    <button (click)="decrement()">Decrement</button>
+    </div>
+---------------------------------------------------------------
+src/app/compoenents/counter/counter.ts
+    import { Component, signal } from '@angular/core';
+
+    @Component({
+    selector: 'app-counter',
+    standalone: true,
+    imports: [],
+    templateUrl: './counter.html',
+    styleUrl: './counter.scss',
+    })
+    export class Counter {
+    counterValue = signal(0);
+
+    increment() {
+        this.counterValue.update((val) => val + 1);
+    }
+
+    decrement() {
+        this.counterValue.update((val) => val - 1);
+    }
+
+    reset() {
+        this.counterValue.set(0);
+    }
+    }
+```
+
