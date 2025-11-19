@@ -1,26 +1,27 @@
-<!-- Install Angular CLI -->
+# Creating Angular Application
 
-npm i -g @angular/cli
+### Install Angular CLI
+`npm i -g @angular/cli`
 
-<!-- Check CLI version -->
+### Check CLI version
+`ng --version`
 
-ng --version
+### Create an app
+`ng new "project name"`
 
-<!-- Create an app -->
+### Create an app with some configuration
+`ng new "project name" --inline-style --inline-template`
 
-ng new "project name"
+<!-- -------------------------------------------------------------- -->
 
-<!-- Create an app with some configuration -->
+# Angular Components
 
-ng new "project name" --inline-style --inline-template
+### Create a component (src/app)
+`ng g c "component name"`
 
-<!-- Create a component (src/app) -->
+`ng g c "new folder/component name"`
 
-ng g c "component name"
-ng g c "new folder/component name"
-
-<!-- Import component -->
-
+### Import component
 ```
 src/app/app.ts
     import { Component, signal } from '@angular/core';
@@ -38,13 +39,78 @@ src/app/app.ts
     export class App {
     protected readonly title = signal('first-ng-app');
     }
-```
-
-```
-    src/app/app.html
+---------------------------------------------------------------
+src/app/app.html
     <app-header />
 
     <main>
     <app-home />
     </main>
+```
+
+<!-- -------------------------------------------------------------- -->
+
+# Data Binding
+
+### Signal() - Parent to Parent
+```
+src/app/components/header/header.ts
+    import { Component, signal } from '@angular/core';
+
+    @Component({
+    selector: 'app-header',
+    imports: [],
+    templateUrl: './header.html',
+    styleUrl: './header.scss',
+    })
+    export class Header {
+    title = signal('My First Angular App');
+    }
+---------------------------------------------------------------
+src/app/components/header/header.html
+    <header>
+    <nav>
+        {{ title() }}
+    </nav>
+    </header>
+```
+
+<!-- -------------------------------------------------------------- -->
+
+# Passing Data From Parent To Child
+
+### Input() - Parent to Child
+```
+src/app/home/home.ts
+    import { Component, signal } from '@angular/core';
+    import { Counter } from '../components/counter/counter';
+    import { Greeting } from '../components/greeting/greeting';
+
+    @Component({
+    selector: 'app-home',
+    standalone: true,
+    imports: [Counter, Greeting],
+    templateUrl: './home.html',
+    styleUrl: './home.scss',
+    })
+    export class Home {
+    homeMessage = signal('Hello World');
+    }
+---------------------------------------------------------------
+src/app/components/greeting/greeting.ts
+    import { Component, input } from '@angular/core';
+
+    @Component({
+    selector: 'app-greeting',
+    imports: [],
+    templateUrl: './greeting.html',
+    styleUrl: './greeting.scss',
+    })
+    export class Greeting {
+    greetingMessage = input('');
+    }
+---------------------------------------------------------------
+src/app/home/home.html
+    <p>home works!</p>
+    <app-greeting [greetingMessage]="homeMessage()"/> 
 ```
