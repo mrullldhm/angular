@@ -7,3 +7,22 @@ header {
   padding-block: 8px;
   padding-inline: 16px;
 }
+
+nav {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+ul {
+  list-style: none;
+}
+
+li:hover {
+cursor: pointer;
+}
+
+span:hover {
+cursor: pointer;
+}

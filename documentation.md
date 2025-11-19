@@ -1,27 +1,26 @@
 # Creating Angular Application
 
-### Install Angular CLI
-`npm i -g @angular/cli`
+#### Install Angular CLI
+- `npm i -g @angular/cli`
 
-### Check CLI version
-`ng --version`
+#### Check CLI version
+- `ng --version`
 
-### Create an app
-`ng new "project name"`
+#### Create Angular app
+- `ng new "project name"`
 
-### Create an app with some configuration
-`ng new "project name" --inline-style --inline-template`
+#### Create an app with inline configuration
+- `ng new "project name" --inline-style --inline-template`
 
 <!-- -------------------------------------------------------------- -->
 
 # Angular Components
 
-### Create a component (src/app)
-`ng g c "component name"`
+#### Create a component (src/app)
+- `ng g c "component name"`
+- `ng g c "new folder/component name"`
 
-`ng g c "new folder/component name"`
-
-### Import component
+#### Import component
 ```
 src/app/app.ts
     import { Component, signal } from '@angular/core';
@@ -52,7 +51,7 @@ src/app/app.html
 
 # Data Binding
 
-### Signal() - Parent to Parent
+#### Signal() - Parent to Parent
 ```
 src/app/components/header/header.ts
     import { Component, signal } from '@angular/core';
@@ -79,7 +78,7 @@ src/app/components/header/header.html
 
 # Passing Data From Parent To Child
 
-### Input() - Parent to Child
+#### Input() - Parent to Child
 ```
 src/app/home/home.html
     <p>home works!</p>
@@ -120,7 +119,7 @@ src/app/components/greeting/greeting.ts
 
 # Event Listener
 
-### 
+#### 
 ```
 src/app/home/home.html
     <p>home works!</p>
@@ -151,9 +150,11 @@ src/app/home/home.ts
     }
 ```
 
+<!-- -------------------------------------------------------------- -->
+
 # Reactive State Management
 
-###
+####
 ```
 src/app/compoenents/counter/counter.html
     <h2>Counter!</h2>
@@ -192,4 +193,62 @@ src/app/compoenents/counter/counter.ts
     }
     }
 ```
+
+<!-- -------------------------------------------------------------- -->
+
+# Routing
+
+```
+src/app/app.html
+    <app-header />
+
+    <main>
+    <router-outlet />
+    </main>
+---------------------------------------------------------------
+src/app/app.routes.ts
+    import { Routes } from '@angular/router';
+
+    export const routes: Routes = [
+    {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => {
+        return import('./home/home').then((m) => m.Home);
+        },
+    },
+    {
+        path: 'todos',
+        loadComponent: () => {
+        return import('./todos/todos').then((m) => m.Todos);
+        },
+    },
+    ];
+---------------------------------------------------------------
+---------------------------------------------------------------
+src/app/components/header/header.html
+    <header>
+    <nav>
+        <span routerLink="/">{{ title() }}</span>
+        <ul>
+        <li routerLink="/todos">Todos</li>
+        </ul>
+    </nav>
+    </header>
+---------------------------------------------------------------
+src/app/components/header/header.ts
+    import { Component, signal } from '@angular/core';
+    import { RouterLink } from '@angular/router';
+
+    @Component({
+    selector: 'app-header',
+    imports: [RouterLink],
+    templateUrl: './header.html',
+    styleUrl: './header.scss',
+    })
+    export class Header {
+    title = signal('My First Angular App');
+}
+```
+
 
