@@ -1,15 +1,19 @@
 # Creating Angular Application
 
 #### Install Angular CLI
+
 - `npm i -g @angular/cli`
 
 #### Check CLI version
+
 - `ng --version`
 
 #### Create Angular app
+
 - `ng new "project name"`
 
 #### Create an app with inline configuration
+
 - `ng new "project name" --inline-style --inline-template`
 
 <!-- -------------------------------------------------------------- -->
@@ -17,10 +21,12 @@
 # Angular Components
 
 #### Create a component (src/app)
+
 - `ng g c "component name"`
 - `ng g c "folder name/component name"`
 
 #### Import component
+
 ```
 src/app/app.ts
     import { Component, signal } from '@angular/core';
@@ -52,6 +58,7 @@ src/app/app.html
 # Data Binding
 
 #### Signal() - Parent to Parent
+
 ```
 src/app/components/header/header.ts
     import { Component, signal } from '@angular/core';
@@ -79,11 +86,12 @@ src/app/components/header/header.html
 # Passing Data From Parent To Child
 
 #### Input() - Parent to Child
+
 ```
 src/app/home/home.html
     <p>home works!</p>
-    
-    <app-greeting [greetingMessage]="homeMessage()"/> 
+
+    <app-greeting [greetingMessage]="homeMessage()"/>
 ---------------------------------------------------------------
 src/app/home/home.ts
     import { Component, signal } from '@angular/core';
@@ -119,7 +127,8 @@ src/app/components/greeting/greeting.ts
 
 # Event Listener
 
-#### 
+####
+
 ```
 src/app/home/home.html
     <p>home works!</p>
@@ -155,6 +164,7 @@ src/app/home/home.ts
 # Reactive State Management
 
 ####
+
 ```
 src/app/compoenents/counter/counter.html
     <h2>Counter!</h2>
@@ -199,6 +209,7 @@ src/app/compoenents/counter/counter.ts
 # Routing - RouterOutlet
 
 #### router-outlet
+
 ```
 src/app/app.html
     <app-header />
@@ -244,6 +255,7 @@ src/app/app.routes.ts
 ```
 
 #### routerLink
+
 ```
 src/app/components/header/header.html
     <header>
@@ -275,7 +287,8 @@ src/app/components/header/header.ts
 # Angular Services
 
 #### Purpose
-``` 
+
+```
     An Angular service is a file where you put shared code.
 
     It is used when:
@@ -290,9 +303,8 @@ src/app/components/header/header.ts
 ```
 
 #### Create Angular service
+
 - `ng g service "folder name/service name"`
-
-
 
 ```
 src\app\todos\todos.html
@@ -323,6 +335,7 @@ src\app\todos\todos.ts
     templateUrl: './todos.html',
     styleUrl: './todos.scss',
     })
+
     export class Todos implements OnInit {
     todoService = inject(TodosService);
     todoItems = signal<Array<Todo>>([]);
@@ -340,6 +353,7 @@ src\app\services\todos.service.ts
     @Injectable({
     providedIn: 'root',
     })
+
     export class TodosService {
     todoItems: Array<Todo> = [
         {
@@ -355,7 +369,7 @@ src\app\services\todos.service.ts
         completed: true,
         },
     ];
-    }
+    }d
 ---------------------------------------------------------------
 src\app\model\todo.type.ts
     export type Todo = {
@@ -365,8 +379,116 @@ src\app\model\todo.type.ts
     id: number;
     };
 ---------------------------------------------------------------
-
 ```
 
 <!-- -------------------------------------------------------------- -->
 
+# HTTP - Angular Service
+
+#### Fake API url
+
+- `https://jsonplaceholder.typicode.com/`
+
+####
+
+```
+src\app\todos\todos.html
+    <h2>Todos!</h2>
+
+    <h4>Example 1</h4>
+    <p>
+    {{ todoItems()[0].title }}
+    </p>
+    <p>
+    {{ todoItems()[1].title }}
+    </p>
+
+    <h4>Example 2</h4>
+    @for (todoItem of todoItems(); track todoItem.id) {
+    <p>{{ todoItem.title }}</p>
+    }
+
+    <h4>Example 3</h4>
+    @for (apiItem of apiItems(); track apiItem.id) {
+    <p>{{ apiItem.title }}</p>
+    }
+---------------------------------------------------------------
+src\app\todos\todos.ts
+    import { Component, inject, OnInit, signal } from '@angular/core';
+    import { TodosService } from '../services/todos.service';
+    import { Todo } from '../model/todo.type';
+    import { ApiService } from '../services/api.service';
+    import { catchError } from 'rxjs';
+
+    @Component({
+    selector: 'app-todos',
+    standalone: true,
+    imports: [],
+    templateUrl: './todos.html',
+    styleUrl: './todos.scss',
+    })
+
+    export class Todos implements OnInit {
+    todoService = inject(TodosService);
+    todoItems = signal<Array<Todo>>([]);
+
+    apiService = inject(ApiService);
+    apiItems = signal<Array<Todo>>([]);
+
+    ngOnInit(): void {
+        console.log(this.todoService.todoItems);
+
+        this.todoItems.set(this.todoService.todoItems);
+
+        this.apiService
+        .getTodosFromApi()
+        .pipe(
+            catchError((err) => {
+            console.error(err);
+            throw err;
+            })
+        )
+        .subscribe((todosApi) => {
+            this.apiItems.set(todosApi);
+        });
+    }
+    }
+---------------------------------------------------------------
+src\app\services\api.service.ts
+    import { HttpClient } from '@angular/common/http';
+    import { inject, Injectable } from '@angular/core';
+    import { Todo } from '../model/todo.type';
+
+    @Injectable({
+    providedIn: 'root',
+    })
+    export class ApiService {
+    http = inject(HttpClient);
+
+    getTodosFromApi() {
+        const url = 'https://jsonplaceholder.typicode.com/todos';
+
+        return this.http.get<Array<Todo>>(url)
+    }
+    }
+---------------------------------------------------------------
+src\app\app.config.ts
+    import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+    import { provideRouter } from '@angular/router';
+
+    import { routes } from './app.routes';
+    import { provideHttpClient } from '@angular/common/http';
+
+    export const appConfig: ApplicationConfig = {
+    providers: [
+        provideBrowserGlobalErrorListeners(),
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideRouter(routes),
+        provideHttpClient()
+    ]
+    };
+```
+
+<!-- -------------------------------------------------------------- -->
+
+# Angular Directive

@@ -2,14 +2,18 @@
 
 <h4>Example 1</h4>
 <p>
-  {{todoItems()[0].title}}
+  {{ todoItems()[0].title }}
 </p>
 <p>
-  {{todoItems()[1].title}}
+  {{ todoItems()[1].title }}
 </p>
 
 <h4>Example 2</h4>
-
 @for (todoItem of todoItems(); track todoItem.id) {
-    <p>{{todoItem.title}}</p>
+<p>{{ todoItem.title }}</p>
+}
+
+<h4>Example 3</h4>
+@for (apiItem of apiItems(); track apiItem.id) {
+<p>{{ apiItem.title }}</p>
 }
