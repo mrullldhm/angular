@@ -388,7 +388,7 @@ src\app\model\todo.type.ts
 
 # HTTP - Angular Service
 
-#### Fake API url
+#### Fake API (sources)
 
 - `https://jsonplaceholder.typicode.com/`
 
@@ -559,6 +559,27 @@ src\app\todos\todos.ts
 - `ng g directive "folder name/file name"`
 
 ```
+src\app\directives\highlight-completed-todo.ts
+    import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+
+    @Directive({
+    selector: '[appHighlightCompletedTodo]',
+    standalone: true,
+    })
+    export class HighlightCompletedTodo {
+    isCompleted = input(false);
+
+    el = inject(ElementRef);
+
+    stylesEffect = effect(() => {
+        if (this.isCompleted()) {
+        this.el.nativeElement.style.backgroundColor = '#d3f9d8';
+        } else {
+        this.el.nativeElement.style.backgroundColor = '#fff';
+        }
+    });
+    }
+---------------------------------------------------------------
 src\app\todos\todos.html
     <h4>Example 3</h4>
 
@@ -655,29 +676,149 @@ src\app\components\todo-item\todo-item.ts
         this.todoToggled.emit(this.apiItem());
     }
     }
----------------------------------------------------------------
-src\app\directives\highlight-completed-todo.ts
-    import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-
-    @Directive({
-    selector: '[appHighlightCompletedTodo]',
-    standalone: true,
-    })
-    export class HighlightCompletedTodo {
-    isCompleted = input(false);
-
-    el = inject(ElementRef);
-
-    stylesEffect = effect(() => {
-        if (this.isCompleted()) {
-        this.el.nativeElement.style.backgroundColor = '#d3f9d8';
-        } else {
-        this.el.nativeElement.style.backgroundColor = '#fff';
-        }
-    });
-    }
 ```
 
 <!-- -------------------------------------------------------------- -->
 
 # Angular Pipes
+
+#### Definition
+```
+A pipe in Angular is a feature that lets you transform data directly inside your template, without modifying the actual value in your component.
+
+Think of it like a “filter” or a “formatter” that cleans or shapes data before displaying it.
+```
+#### Sources
+- `https://angular.dev/guide/templates/pipes`
+
+```
+src\app\components\todo-item\todo-item.html
+    <li appHighlightCompletedTodo [isCompleted]="apiItem().completed" class="todos__item">
+    <input
+        id="todo-{{ apiItem().id }}"
+        type="checkbox"
+        [checked]="apiItem().completed"
+        (change)="this.todoClicked()"
+    />
+    <label for="todo-{{ apiItem().id }}">{{ apiItem().title | uppercase }}</label>
+    </li>
+---------------------------------------------------------------
+src\app\components\todo-item\todo-item.ts
+    import { Component, input, output } from '@angular/core';
+    import { Todo } from '../../model/todo.type';
+    import { HighlightCompletedTodo } from '../../directives/highlight-completed-todo';
+    import { UpperCasePipe } from '@angular/common';
+
+    @Component({
+    selector: 'app-todo-item',
+    standalone: true,
+    imports: [HighlightCompletedTodo, UpperCasePipe],
+    templateUrl: './todo-item.html',
+    styleUrl: './todo-item.scss',
+    })
+```
+
+#### Custom Pipes
+- `ng g pipe pipes/filter-todos`
+
+```
+src\app\pipes\filter-todos-pipe.ts
+    import { Pipe, PipeTransform } from '@angular/core';
+    import { Todo } from '../model/todo.type';
+    import { filter } from 'rxjs';
+
+    @Pipe({
+    name: 'filterTodos',
+    })
+    export class FilterTodosPipe implements PipeTransform {
+    transform(apiItems: Todo[], searchTerm: string): Todo[] {
+        if (!apiItems) {
+        return apiItems;
+        }
+        const text = searchTerm.toLowerCase();
+        return apiItems.filter((apiItem) => {
+        return apiItem.title.toLowerCase().includes(text);
+        });
+    }
+    }
+---------------------------------------------------------------
+src\app\todos\todos.html
+    <h4>Example 3</h4>
+    <form action="">
+    <label for="">Filter Todos</label><br />
+    <input name="searchTerm" type="text" placeholder="Search todos ..." [(ngModel)]="searchTerm" />
+    </form>
+
+    <p class="load" *ngIf="!apiItems().length">Loading...</p>
+
+    @if (!apiItems().length) {
+    <p class="load">Loading...</p>
+    }
+
+    <ul class="todos">
+    @for (apiItem of apiItems() | filterTodos : searchTerm(); track apiItem.id) {
+    <app-todo-item (todoToggled)="updateTodoItem($event)" [apiItem]="apiItem" />
+    }
+    </ul>
+---------------------------------------------------------------
+src\app\todos\todos.ts
+    import { Component, inject, OnInit, signal } from '@angular/core';
+    import { TodosService } from '../services/todos.service';
+    import { Todo } from '../model/todo.type';
+    import { ApiService } from '../services/api.service';
+    import { catchError } from 'rxjs';
+    import { NgIf } from '@angular/common';
+    import { TodoItem } from '../components/todo-item/todo-item';
+    import { FormsModule } from '@angular/forms';
+    import { FilterTodosPipe } from '../pipes/filter-todos-pipe';
+
+    @Component({
+    selector: 'app-todos',
+    standalone: true,
+    imports: [NgIf, TodoItem, FormsModule, FilterTodosPipe],
+    templateUrl: './todos.html',
+    styleUrl: './todos.scss',
+    })
+
+    export class Todos implements OnInit {
+    todoService = inject(TodosService);
+    todoItems = signal<Array<Todo>>([]);
+
+    apiService = inject(ApiService);
+    apiItems = signal<Array<Todo>>([]);
+
+    searchTerm = signal('')
+
+    ngOnInit(): void {
+        console.log(this.todoService.todoItems);
+
+        this.todoItems.set(this.todoService.todoItems);
+
+        this.apiService
+        .getTodosFromApi()
+        .pipe(
+            catchError((err) => {
+            console.error(err);
+            throw err;
+            })
+        )
+        .subscribe((todosApi) => {
+            this.apiItems.set(todosApi);
+        });
+    }
+
+    updateTodoItem(todoItem: Todo) {
+        this.apiItems.update((todosApi) => {
+        return todosApi.map((todo) => {
+            if (todo.id === todoItem.id) {
+            return {
+                ...todo,
+                completed: !todo.completed,
+            };
+            }
+            return todo;
+        });
+        });
+    }
+    }
+```

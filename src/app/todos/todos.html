@@ -14,6 +14,11 @@
 }
 
 <h4>Example 3</h4>
+<form action="">
+  <label for="">Filter Todos</label><br />
+  <input name="searchTerm" type="text" placeholder="Search todos ..." [(ngModel)]="searchTerm" />
+</form>
+
 <p class="load" *ngIf="!apiItems().length">Loading...</p>
 
 @if (!apiItems().length) {
@@ -21,7 +26,7 @@
 }
 
 <ul class="todos">
-  @for (apiItem of apiItems(); track apiItem.id) {
+  @for (apiItem of apiItems() | filterTodos : searchTerm(); track apiItem.id) {
   <app-todo-item (todoToggled)="updateTodoItem($event)" [apiItem]="apiItem" />
   }
 </ul>
