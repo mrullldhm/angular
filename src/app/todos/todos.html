@@ -22,9 +22,6 @@
 
 <ul class="todos">
   @for (apiItem of apiItems(); track apiItem.id) {
-  <li class="todos__item">
-    <input id="todo-{{ apiItem.id }}" type="checkbox" [value]="apiItem.completed" />
-    <label for="todo-{{ apiItem.id }}">{{ apiItem.title }}</label>
-  </li>
+  <app-todo-item (todoToggled)="updateTodoItem($event)" [apiItem]="apiItem" />
   }
 </ul>

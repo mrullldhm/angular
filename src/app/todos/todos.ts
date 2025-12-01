@@ -4,11 +4,12 @@ import { Todo } from '../model/todo.type';
 import { ApiService } from '../services/api.service';
 import { catchError } from 'rxjs';
 import { NgIf } from '@angular/common';
+import { TodoItem } from '../components/todo-item/todo-item';
 
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [NgIf],
+  imports: [NgIf, TodoItem],
   templateUrl: './todos.html',
   styleUrl: './todos.scss',
 })
@@ -36,5 +37,19 @@ export class Todos implements OnInit {
       .subscribe((todosApi) => {
         this.apiItems.set(todosApi);
       });
+  }
+
+  updateTodoItem(todoItem: Todo) {
+    this.apiItems.update((todosApi) => {
+      return todosApi.map((todo) => {
+        if (todo.id === todoItem.id) {
+          return {
+            ...todo,
+            completed: !todo.completed,
+          };
+        }
+        return todo;
+      });
+    });
   }
 }

@@ -69,6 +69,7 @@ src/app/components/header/header.ts
     templateUrl: './header.html',
     styleUrl: './header.scss',
     })
+
     export class Header {
     title = signal('My First Angular App');
     }
@@ -105,6 +106,7 @@ src/app/home/home.ts
     templateUrl: './home.html',
     styleUrl: './home.scss',
     })
+
     export class Home {
     homeMessage = signal('Hello World');
     }
@@ -118,6 +120,7 @@ src/app/components/greeting/greeting.ts
     templateUrl: './greeting.html',
     styleUrl: './greeting.scss',
     })
+
     export class Greeting {
     greetingMessage = input('');
     }
@@ -409,9 +412,14 @@ src\app\todos\todos.html
     }
 
     <h4>Example 3</h4>
+    <ul class="todos">
     @for (apiItem of apiItems(); track apiItem.id) {
-    <p>{{ apiItem.title }}</p>
+    <li class="todos__item">
+        <input id="todo-{{ apiItem.id }}" type="checkbox" [value]="apiItem.completed" />
+        <label for="todo-{{ apiItem.id }}">{{ apiItem.title }}</label>
+    </li>
     }
+    </ul>
 ---------------------------------------------------------------
 src\app\todos\todos.ts
     import { Component, inject, OnInit, signal } from '@angular/core';
@@ -492,3 +500,184 @@ src\app\app.config.ts
 <!-- -------------------------------------------------------------- -->
 
 # Angular Directive
+
+#### Definition
+
+```
+In Angular, directives are instructions that you attach to elements in the DOM (HTML) to change how they look or behave.
+
+Think of them as special markers that tell Angular:
+
+“Hey, do something with this element.”
+```
+
+#### Built In Directive
+
+- `Component Directive`
+- `Attribute Directive`
+- `Structural Directive`
+
+```
+src\app\todos\todos.html
+    <h2>Todos!</h2>
+
+    <h4>Example 3</h4>
+    <p class="load" *ngIf="!apiItems().length">Loading...</p>
+
+    @if (!apiItems().length) {
+    <p class="load">Loading...</p>
+    }
+
+<ul class="todos">
+  @for (apiItem of apiItems(); track apiItem.id) {
+  <li class="todos__item">
+    <input id="todo-{{ apiItem.id }}" type="checkbox" [value]="apiItem.completed" />
+    <label for="todo-{{ apiItem.id }}">{{ apiItem.title }}</label>
+  </li>
+  }
+</ul>
+---------------------------------------------------------------
+src\app\todos\todos.ts
+    import { Component, inject, OnInit, signal } from '@angular/core';
+    import { TodosService } from '../services/todos.service';
+    import { Todo } from '../model/todo.type';
+    import { ApiService } from '../services/api.service';
+    import { catchError } from 'rxjs';
+    import { NgIf } from '@angular/common';
+
+    @Component({
+    selector: 'app-todos',
+    standalone: true,
+    imports: [NgIf],
+    templateUrl: './todos.html',
+    styleUrl: './todos.scss',
+    })
+```
+
+#### Custom Directive
+
+- `ng g directive "folder name/file name"`
+
+```
+src\app\todos\todos.html
+    <h4>Example 3</h4>
+
+    @if (!apiItems().length) {
+    <p class="load">Loading...</p>
+    }
+
+    <ul class="todos">
+        @for (apiItem of apiItems(); track apiItem.id) {
+        <app-todo-item (todoToggled)="updateTodoItem($event)" [apiItem]="apiItem" />
+        }
+    </ul>
+---------------------------------------------------------------
+src\app\todos\todos.ts
+    import { Component, inject, OnInit, signal } from '@angular/core';
+    import { TodosService } from '../services/todos.service';
+    import { Todo } from '../model/todo.type';
+    import { ApiService } from '../services/api.service';
+    import { catchError } from 'rxjs';
+    import { NgIf } from '@angular/common';
+    import { TodoItem } from '../components/todo-item/todo-item';
+
+    @Component({
+    selector: 'app-todos',
+    standalone: true,
+    imports: [NgIf, TodoItem],
+    templateUrl: './todos.html',
+    styleUrl: './todos.scss',
+    })
+
+    export class Todos implements OnInit {
+    todoService = inject(TodosService);
+    todoItems = signal<Array<Todo>>([]);
+
+    apiService = inject(ApiService);
+    apiItems = signal<Array<Todo>>([]);
+
+    ngOnInit(): void {
+        console.log(this.todoService.todoItems);
+
+        this.todoItems.set(this.todoService.todoItems);
+
+        this.apiService
+        .getTodosFromApi()
+        .pipe(
+            catchError((err) => {
+            console.error(err);
+            throw err;
+            })
+        )
+        .subscribe((todosApi) => {
+            this.apiItems.set(todosApi);
+        });
+    }
+
+    updateTodoItem(todoItem: Todo) {
+        this.apiItems.update((todosApi) => {
+        return todosApi.map((todo) => {
+            if (todo.id === todoItem.id) {
+            return {
+                ...todo,
+                completed: !todo.completed,
+            };
+            }
+            return todo;
+        });
+        });
+    }
+    }
+---------------------------------------------------------------
+src\app\components\todo-item\todo-item.html
+    <li appHighlightCompletedTodo [isCompleted]="apiItem().completed" class="todos__item">
+    <input id="todo-{{ apiItem().id }}" type="checkbox" [checked]="apiItem().completed" (change)="this.todoClicked()"/>
+    <label for="todo-{{ apiItem().id }}">{{ apiItem().title }}</label>
+</li>
+---------------------------------------------------------------
+src\app\components\todo-item\todo-item.ts
+    import { Component, input, output } from '@angular/core';
+    import { Todo } from '../../model/todo.type';
+    import { HighlightCompletedTodo } from '../../directives/highlight-completed-todo';
+
+    @Component({
+    selector: 'app-todo-item',
+    standalone: true,
+    imports: [HighlightCompletedTodo],
+    templateUrl: './todo-item.html',
+    styleUrl: './todo-item.scss',
+    })
+    export class TodoItem {
+    apiItem = input.required<Todo>();
+    todoToggled = output<Todo>();
+
+    todoClicked() {
+        this.todoToggled.emit(this.apiItem());
+    }
+    }
+---------------------------------------------------------------
+src\app\directives\highlight-completed-todo.ts
+    import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+
+    @Directive({
+    selector: '[appHighlightCompletedTodo]',
+    standalone: true,
+    })
+    export class HighlightCompletedTodo {
+    isCompleted = input(false);
+
+    el = inject(ElementRef);
+
+    stylesEffect = effect(() => {
+        if (this.isCompleted()) {
+        this.el.nativeElement.style.backgroundColor = '#d3f9d8';
+        } else {
+        this.el.nativeElement.style.backgroundColor = '#fff';
+        }
+    });
+    }
+```
+
+<!-- -------------------------------------------------------------- -->
+
+# Angular Pipes
