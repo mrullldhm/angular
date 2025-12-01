@@ -3,11 +3,12 @@ import { TodosService } from '../services/todos.service';
 import { Todo } from '../model/todo.type';
 import { ApiService } from '../services/api.service';
 import { catchError } from 'rxjs';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [],
+  imports: [NgIf],
   templateUrl: './todos.html',
   styleUrl: './todos.scss',
 })

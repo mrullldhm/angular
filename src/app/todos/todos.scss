@@ -1,0 +1,11 @@
+.load {
+    color: rgb(236, 0, 0);
+}
+
+.todos {
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

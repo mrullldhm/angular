@@ -14,6 +14,17 @@
 }
 
 <h4>Example 3</h4>
-@for (apiItem of apiItems(); track apiItem.id) {
-<p>{{ apiItem.title }}</p>
+<p class="load" *ngIf="!apiItems().length">Loading...</p>
+
+@if (!apiItems().length) {
+<p class="load">Loading...</p>
 }
+
+<ul class="todos">
+  @for (apiItem of apiItems(); track apiItem.id) {
+  <li class="todos__item">
+    <input id="todo-{{ apiItem.id }}" type="checkbox" [value]="apiItem.completed" />
+    <label for="todo-{{ apiItem.id }}">{{ apiItem.title }}</label>
+  </li>
+  }
+</ul>
